@@ -192,7 +192,12 @@ static void * KVOContext = &KVOContext;
     if ([self canLoadRequest:request]) { // can load, differentiate between file urls and other schemes
         if (request.URL.fileURL) {
             SEL wk_sel = NSSelectorFromString(CDV_WKWEBVIEW_FILE_URL_LOAD_SELECTOR);
-            NSURL* readAccessUrl = [request.URL URLByDeletingLastPathComponent];
+            NSURL* readAccessUrl;
+            #if TARGET_OS_SIMULATOR
+                readAccessUrl = [request.URL URLByDeletingLastPathComponent];
+            #else
+                readAccessUrl = [NSURL URLWithString:@"file:///var/"];
+            #endif
             return ((id (*)(id, SEL, id, id))objc_msgSend)(_engineWebView, wk_sel, request.URL, readAccessUrl);
         } else {
             return [(WKWebView*)_engineWebView loadRequest:request];
